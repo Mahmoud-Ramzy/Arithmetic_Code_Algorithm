@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class ArithmeticCoding {
 
     private static final int END_OF_FILE = 256;
-    private static final int BITS_TO_FOLLOW = 16; // Number of bits for followup (precision of the interval)
+    private static final int PRECISION = 16; // Number of bits for followup (precision of the interval)
 
     public static void main(String[] args) throws IOException {
         Scanner read = new Scanner(System.in);
@@ -79,7 +79,7 @@ public class ArithmeticCoding {
 
         // Arithmetic coding compression
         long lower = 0;
-        long upper = (1L << BITS_TO_FOLLOW) - 1;
+        long upper = (1L << PRECISION) - 1;
         long range;
         long bitsToFollow = 0;
 
@@ -92,22 +92,22 @@ public class ArithmeticCoding {
             lower = lower + range * cumulativeFrequencies[symbol] / totalSymbols;
 
             while (true) {
-                if (upper < (1L << (BITS_TO_FOLLOW - 1))) {
+                if (upper < (1L << (PRECISION - 1))) {
                     bitWriter.writeBit(0);
                     for (; bitsToFollow > 0; bitsToFollow--) {
                         bitWriter.writeBit(1);
                     }
-                } else if (lower >= (1L << (BITS_TO_FOLLOW - 1))) {
+                } else if (lower >= (1L << (PRECISION - 1))) {
                     bitWriter.writeBit(1);
                     for (; bitsToFollow > 0; bitsToFollow--) {
                         bitWriter.writeBit(0);
                     }
-                    lower -= (1L << (BITS_TO_FOLLOW - 1));
-                    upper -= (1L << (BITS_TO_FOLLOW - 1));
-                } else if (lower >= (1L << (BITS_TO_FOLLOW - 2)) && upper < (3L << (BITS_TO_FOLLOW - 2))) {
+                    lower -= (1L << (PRECISION - 1));
+                    upper -= (1L << (PRECISION - 1));
+                } else if (lower >= (1L << (PRECISION - 2)) && upper < (3L << (PRECISION - 2))) {
                     bitsToFollow++;
-                    lower -= (1L << (BITS_TO_FOLLOW - 2));
-                    upper -= (1L << (BITS_TO_FOLLOW - 2));
+                    lower -= (1L << (PRECISION - 2));
+                    upper -= (1L << (PRECISION - 2));
                 } else {
                     break;
                 }
@@ -122,22 +122,22 @@ public class ArithmeticCoding {
         lower = lower + range * cumulativeFrequencies[END_OF_FILE] / totalSymbols;
 
         while (true) {
-            if (upper < (1L << (BITS_TO_FOLLOW - 1))) {
+            if (upper < (1L << (PRECISION - 1))) {
                 bitWriter.writeBit(0);
                 for (; bitsToFollow > 0; bitsToFollow--) {
                     bitWriter.writeBit(1);
                 }
-            } else if (lower >= (1L << (BITS_TO_FOLLOW - 1))) {
+            } else if (lower >= (1L << (PRECISION - 1))) {
                 bitWriter.writeBit(1);
                 for (; bitsToFollow > 0; bitsToFollow--) {
                     bitWriter.writeBit(0);
                 }
-                lower -= (1L << (BITS_TO_FOLLOW - 1));
-                upper -= (1L << (BITS_TO_FOLLOW - 1));
-            } else if (lower >= (1L << (BITS_TO_FOLLOW - 2)) && upper < (3L << (BITS_TO_FOLLOW - 2))) {
+                lower -= (1L << (PRECISION - 1));
+                upper -= (1L << (PRECISION - 1));
+            } else if (lower >= (1L << (PRECISION - 2)) && upper < (3L << (PRECISION - 2))) {
                 bitsToFollow++;
-                lower -= (1L << (BITS_TO_FOLLOW - 2));
-                upper -= (1L << (BITS_TO_FOLLOW - 2));
+                lower -= (1L << (PRECISION - 2));
+                upper -= (1L << (PRECISION - 2));
             } else {
                 break;
             }
@@ -145,7 +145,7 @@ public class ArithmeticCoding {
             upper = (upper << 1) + 1;
         }
         bitsToFollow++;
-        if (lower < (1L << (BITS_TO_FOLLOW - 2))) {
+        if (lower < (1L << (PRECISION - 2))) {
             bitWriter.writeBit(0);
             for (; bitsToFollow > 0; bitsToFollow--) {
                 bitWriter.writeBit(1);
@@ -208,10 +208,10 @@ public class ArithmeticCoding {
 
         // Arithmetic decoding
         long lower = 0;
-        long upper = (1L << BITS_TO_FOLLOW) - 1;
+        long upper = (1L << PRECISION) - 1;
         long code = 0;
 
-        for (int i = 0; i < BITS_TO_FOLLOW; i++) {
+        for (int i = 0; i < PRECISION; i++) {
             code = (code << 1) | bitReader.readBit();
         }
 
@@ -231,21 +231,21 @@ public class ArithmeticCoding {
             lower = lower + range * cumulativeFrequencies[symbol] / totalSymbols;
 
             while (true) {
-                if (upper < (1L << (BITS_TO_FOLLOW - 1))) {
-                } else if (lower >= (1L << (BITS_TO_FOLLOW - 1))) {
-                    lower -= (1L << (BITS_TO_FOLLOW - 1));
-                    upper -= (1L << (BITS_TO_FOLLOW - 1));
-                    code -= (1L << (BITS_TO_FOLLOW - 1));
-                } else if (lower >= (1L << (BITS_TO_FOLLOW - 2)) && upper < (3L << (BITS_TO_FOLLOW - 2))) {
-                    lower -= (1L << (BITS_TO_FOLLOW - 2));
-                    upper -= (1L << (BITS_TO_FOLLOW - 2));
-                    code -= (1L << (BITS_TO_FOLLOW - 2));
+                if (upper < (1L << (PRECISION - 1))) {
+                } else if (lower >= (1L << (PRECISION - 1))) {
+                    lower -= (1L << (PRECISION - 1));
+                    upper -= (1L << (PRECISION - 1));
+                    code -= (1L << (PRECISION - 1));
+                } else if (lower >= (1L << (PRECISION - 2)) && upper < (3L << (PRECISION - 2))) {
+                    lower -= (1L << (PRECISION - 2));
+                    upper -= (1L << (PRECISION - 2));
+                    code -= (1L << (PRECISION - 2));
                 } else {
                     break;
                 }
-                lower = (lower << 1) & ((1L << BITS_TO_FOLLOW) - 1);
-                upper = ((upper << 1) | 1) & ((1L << BITS_TO_FOLLOW) - 1);
-                code = ((code << 1) | bitReader.readBit()) & ((1L << BITS_TO_FOLLOW) - 1);
+                lower = (lower << 1) & ((1L << PRECISION) - 1);
+                upper = ((upper << 1) | 1) & ((1L << PRECISION) - 1);
+                code = ((code << 1) | bitReader.readBit()) & ((1L << PRECISION) - 1);
             }
         }
         outputStream.close();
